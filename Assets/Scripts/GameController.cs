@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Game.Minesweeper
@@ -8,6 +9,8 @@ namespace Game.Minesweeper
         public BlockObject blockInfoPrefab;
         public BlockObject[,] blockObjects;
         public Transform parent;
+
+        public Text gameOverText;
 
         public int gridSize = 3;
         public int mineCount = 3;
@@ -30,7 +33,7 @@ namespace Game.Minesweeper
 
             for ( var i = 0; i < mineCount; i++ )
             {
-                array[i] = Random.Range( 0, size );
+                array[i] = UnityEngine.Random.Range( 0, size );
             }
 
             return array;
@@ -47,22 +50,35 @@ namespace Game.Minesweeper
             return false;
         }
 
+        public void OnGameover()
+        {
+            gameOverText.gameObject.SetActive( true );
+            StartCoroutine( ShowGameoverScreen() );
+        }
+
+        public IEnumerator ShowGameoverScreen( float delay = 2f )
+        {
+            yield return new WaitForSeconds( delay );
+
+            UnityEngine.SceneManagement.SceneManager.LoadScene( "Gameover" );
+        }
+
         private bool IsMine( int index )
         {
             var mineIndex = 0;
             var selectedArray = SetupMineIndex();
 
-            var containsMine = false;
+            //var containsMine = false;
             if ( mineIndex < mineCount )
             {
                 if ( Contains( selectedArray, index ) )
                 {
-                    containsMine = true;
                     mineIndex++;
+                    return true;
                 }
             }
 
-            return containsMine;
+            return false;
         }
 
         private void SetupGrid()
@@ -88,6 +104,15 @@ namespace Game.Minesweeper
                     blockObjects[i, j] = block;
                 }
             }
+
+            //for ( var j = 0; j < gridSize; j++ )
+            //{
+            //    for ( var i = 0; i < gridSize; i++ )
+            //    {
+            //        if ( blockObjects[i, j].count == -1 )
+            //            PopulateAdjacentBlockCounter( i, j );
+            //    }
+            //}
         }
 
         private void SetupAdjacentCounter()
