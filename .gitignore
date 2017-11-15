@@ -1,0 +1,7 @@
+Library/*
+UnityPackageManager/*
+Temp/*
+.vs/*
+
+*.csproj
+*.csproj.user
