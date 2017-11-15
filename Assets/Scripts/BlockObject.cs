@@ -4,6 +4,23 @@ using UnityEngine.UI;
 
 namespace Game.Minesweeper
 {
+    public class Point
+    {
+        public int i;
+        public int j;
+
+        public Point( int i, int j )
+        {
+            this.i = i;
+            this.j = j;
+        }
+
+        public override string ToString()
+        {
+            return "(i " + i + ", j " + j + ")";
+        }
+    }
+
     public class BlockObject : MonoBehaviour
     {
         public int count;
@@ -15,6 +32,8 @@ namespace Game.Minesweeper
 
         public Button parent;
 
+        public Point point;
+
         private void Start()
         {
             parent = GetComponent<Button>();
@@ -23,10 +42,11 @@ namespace Game.Minesweeper
             parent.onClick.AddListener( () => OnButtonClick() );
         }
 
-        public void Setup( int count, bool hasVisited = false )
+        public void Setup( int count, Point point, bool hasVisited = false )
         {
             this.count = count;
             this.hasVisited = hasVisited;
+            this.point = point;
 
             SetCountText();
         }
@@ -48,23 +68,49 @@ namespace Game.Minesweeper
         private void OnButtonClick()
         {
             overlay.gameObject.SetActive( false );
+            var gameController = FindObjectOfType<GameController>();
 
             if ( count == -1 )
             {
                 mineImg.gameObject.SetActive( true );
-                var gameController = FindObjectOfType<GameController>();
                 gameController.OnGameover();
             }
             else
             {
                 hasVisited = true;
                 countText.gameObject.SetActive( true );
+
+                StartCoroutine( OpenBlock( gameController ) );
             }
         }
 
-        private IEnumerator OpenBlock( float delay = 0.5f )
+        private IEnumerator OpenBlock( GameController gameController, float delay = 0.5f )
         {
+            if ( hasVisited == true || count == -1 )
+                yield return null;
+
+            hasVisited = true;
+            overlay.gameObject.SetActive( false );
+
+            if ( count != -1 )
+            {
+                countText.gameObject.SetActive( true );
+            }
+            else
+            {
+                mineImg.gameObject.SetActive( true );
+            }
+
             yield return new WaitForSeconds( delay );
+
+            var blocks = gameController.GetObjectsByIndex( this );
+            for ( var i = 0; i < blocks.Length; i++ )
+            {
+                if ( blocks[i] == null )
+                    break;
+
+                StartCoroutine( blocks[i].OpenBlock( gameController ) );
+            }
         }
     }
 }

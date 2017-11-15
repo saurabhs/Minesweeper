@@ -53,10 +53,23 @@ namespace Game.Minesweeper
         public void OnGameover()
         {
             gameOverText.gameObject.SetActive( true );
+
+            for ( var j = 0; j < gridSize; j++ )
+            {
+                for ( var i = 0; i < gridSize; i++ )
+                {
+                    if ( blockObjects[i, j].count == -1 )
+                    {
+                        blockObjects[i, j].overlay.gameObject.SetActive( false );
+                        blockObjects[i, j].mineImg.gameObject.SetActive( true );
+                    }
+                }
+            }
+
             StartCoroutine( ShowGameoverScreen() );
         }
 
-        public IEnumerator ShowGameoverScreen( float delay = 2f )
+        public IEnumerator ShowGameoverScreen( float delay = 4f )
         {
             yield return new WaitForSeconds( delay );
 
@@ -68,7 +81,6 @@ namespace Game.Minesweeper
             var mineIndex = 0;
             var selectedArray = SetupMineIndex();
 
-            //var containsMine = false;
             if ( mineIndex < mineCount )
             {
                 if ( Contains( selectedArray, index ) )
@@ -98,21 +110,12 @@ namespace Game.Minesweeper
 
                     //set position
                     block.GetComponent<RectTransform>().anchoredPosition = new Vector2( i * buttonRect.rect.width, -j * buttonRect.rect.height );
-                    block.Setup( IsMine( index++ ) ? -1 : block.count );
+                    block.Setup( IsMine( index++ ) ? -1 : block.count, new Point( i, j ) );
 
                     //save to array
                     blockObjects[i, j] = block;
                 }
             }
-
-            //for ( var j = 0; j < gridSize; j++ )
-            //{
-            //    for ( var i = 0; i < gridSize; i++ )
-            //    {
-            //        if ( blockObjects[i, j].count == -1 )
-            //            PopulateAdjacentBlockCounter( i, j );
-            //    }
-            //}
         }
 
         private void SetupAdjacentCounter()
@@ -176,6 +179,112 @@ namespace Game.Minesweeper
             {
                 blockObjects[i + 1, j + 1].SetCounter();
             }
+        }
+
+        public BlockObject[] GetObjectsByIndex( BlockObject caller )
+        {
+            var index = 0;
+            var blocks = new BlockObject[8];
+            var i = caller.point.i;
+            var j = caller.point.j;
+
+            //left
+            if ( i > 0 )
+            {
+                var block = blockObjects[i - 1, j];
+                if ( !block.hasVisited && block.count != -1 )
+                {
+                    blocks[index++] = block;
+                }
+                else
+                    return blocks;
+            }
+
+            //right
+            if ( i < gridSize - 1 )
+            {
+                var block = blockObjects[i + 1, j];
+                if ( !block.hasVisited && block.count != -1 )
+                {
+                    blocks[index++] = block;
+                }
+                else
+                    return blocks;
+            }
+
+            //up
+            if ( j > 0 )
+            {
+                var block = blockObjects[i, j - 1];
+                if ( !block.hasVisited && block.count != -1 )
+                {
+                    blocks[index++] = block;
+                }
+                else
+                    return blocks;
+            }
+
+            //down
+            if ( j < gridSize - 1 )
+            {
+                var block = blockObjects[i, j + 1];
+                if ( !block.hasVisited && block.count != -1 )
+                {
+                    blocks[index++] = block;
+                }
+                else
+                    return blocks;
+            }
+
+            //top left
+            if ( i > 0 && j > 0 )
+            {
+                var block = blockObjects[i - 1, j - 1];
+                if ( !block.hasVisited && block.count != -1 )
+                {
+                    blocks[index++] = block;
+                }
+                else
+                    return blocks;
+            }
+
+            //top right
+            if ( i < gridSize - 1 && j > 0 )
+            {
+                var block = blockObjects[i + 1, j - 1];
+                if ( !block.hasVisited && block.count != -1 )
+                {
+                    blocks[index++] = block;
+                }
+                else
+                    return blocks;
+            }
+
+            //bottom left
+            if ( i > 0 && j < gridSize - 1 )
+            {
+                var block = blockObjects[i - 1, j + 1];
+                if ( !block.hasVisited && block.count != -1 )
+                {
+                    blocks[index++] = block;
+                }
+                else
+                    return blocks;
+            }
+
+            //bottom right
+            if ( i < gridSize - 1 && j < gridSize - 1 )
+            {
+                var block = blockObjects[i + 1, j + 1];
+                if ( !block.hasVisited && block.count != -1 )
+                {
+                    blocks[index++] = block;
+                }
+                else
+                    return blocks;
+            }
+
+            return blocks;
         }
     }
 }
