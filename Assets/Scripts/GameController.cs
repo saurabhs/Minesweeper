@@ -54,6 +54,8 @@ namespace Game.Minesweeper
             var buttonRect = blockInfoPrefab.GetComponent<Button>().GetComponent<RectTransform>();
             var index = 0;
             var mineIndexes = SetupMineIndex();
+            var offset = GetOffsetPosition( buttonRect );
+            print( "offset " + offset );
 
             for ( var j = 0; j < gridSize; j++ )
             {
@@ -66,7 +68,7 @@ namespace Game.Minesweeper
                     block.gameObject.name = "Block_" + index;
 
                     //set position
-                    block.GetComponent<RectTransform>().anchoredPosition = new Vector2( i * buttonRect.rect.width, -j * buttonRect.rect.height );
+                    block.GetComponent<RectTransform>().anchoredPosition = new Vector2( i * buttonRect.rect.width + offset, -j * buttonRect.rect.height - offset );
                     block.Setup( IsMine( index++, mineIndexes ) ? -1 : block.count, new Point( i, j ) );
 
                     //save to array
@@ -326,6 +328,14 @@ namespace Game.Minesweeper
             {
                 OnGameWin();
             }
+        }
+
+        private int GetOffsetPosition( RectTransform buttonRect )
+        {
+            //var totalWidth = ( int )buttonRect.rect.width * gridSize;
+            //return (totalWidth * 2) / gridSize;     //[totalWidth / (gridSize / 2)]
+
+            return (( int )buttonRect.rect.width * (1 - gridSize) / 2);     //(buttonwidth * (1 - gridSize)) / 2
         }
 
         #endregion

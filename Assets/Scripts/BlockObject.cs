@@ -29,16 +29,15 @@ namespace Game.Minesweeper
         public Image overlay;
         public Image mineImg;
         public Text countText;
-        public Button parent;
 
         public Point point;
 
         private void Start()
         {
-            parent = GetComponent<Button>();
-
             countText.gameObject.SetActive( false );
-            parent.onClick.AddListener( () => OnButtonClick() );
+
+            var button = GetComponent<Button>();
+            button.onClick.AddListener( () => OnButtonClick() );
         }
 
         public void Setup( int count, Point point, bool hasVisited = false )

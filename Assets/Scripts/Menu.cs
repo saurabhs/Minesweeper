@@ -7,6 +7,7 @@ namespace Game.Minesweeper
     public class Menu : MonoBehaviour
     {
         public Button playButton;
+        public Button exitButton;
 
         public Slider gridSizeSlider;
         public Slider mineCountSlider;
@@ -26,6 +27,7 @@ namespace Game.Minesweeper
         private void SetupInputs()
         {
             playButton.onClick.AddListener( () => OnPlayButtonClick() );
+            exitButton.onClick.AddListener( () => OnExitButtonClick() );
 
             gridSizeSlider.onValueChanged.AddListener( delegate
             { OnGridSizeScrollbarValueChange( gridSizeSlider ); } );
@@ -76,6 +78,11 @@ namespace Game.Minesweeper
 
             PlayerPrefs.Save();
             SceneManager.LoadScene( "Game" );
+        }
+
+        private void OnExitButtonClick()
+        {
+            Application.Quit();
         }
 
         #endregion

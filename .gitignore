@@ -2,6 +2,7 @@ Library/*
 UnityPackageManager/*
 Temp/*
 .vs/*
+bin/*
 
 *.csproj
 *.csproj.user
