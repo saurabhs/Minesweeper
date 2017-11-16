@@ -29,7 +29,6 @@ namespace Game.Minesweeper
         public Image overlay;
         public Image mineImg;
         public Text countText;
-
         public Button parent;
 
         public Point point;
@@ -44,6 +43,9 @@ namespace Game.Minesweeper
 
         public void Setup( int count, Point point, bool hasVisited = false )
         {
+            if ( count == -1 )
+                overlay.color = Color.green;
+
             this.count = count;
             this.hasVisited = hasVisited;
             this.point = point;
@@ -67,7 +69,10 @@ namespace Game.Minesweeper
 
         private void OnButtonClick()
         {
-            overlay.gameObject.SetActive( false );
+            //overlay.gameObject.SetActive( false );
+            var color = overlay.color;
+            overlay.color = new Color( color.r, color.g, color.b, 0.5f ); //.gameObject.SetActive( false );
+
             var gameController = FindObjectOfType<GameController>();
 
             if ( count == -1 )
@@ -80,26 +85,27 @@ namespace Game.Minesweeper
                 hasVisited = true;
                 countText.gameObject.SetActive( true );
 
+                //gameController.OnBlockVisited();
+
                 StartCoroutine( OpenBlock( gameController ) );
             }
         }
 
-        private IEnumerator OpenBlock( GameController gameController, float delay = 0.5f )
+        private IEnumerator OpenBlock( GameController gameController, float delay = 0.25f )
         {
             if ( hasVisited == true || count == -1 )
                 yield return null;
 
             hasVisited = true;
-            overlay.gameObject.SetActive( false );
+            gameController.OnBlockVisited();
+
+            var color = overlay.color;
+            overlay.color = new Color( color.r, color.g, color.b, 0.5f ); //.gameObject.SetActive( false );
 
             if ( count != -1 )
-            {
                 countText.gameObject.SetActive( true );
-            }
             else
-            {
                 mineImg.gameObject.SetActive( true );
-            }
 
             yield return new WaitForSeconds( delay );
 

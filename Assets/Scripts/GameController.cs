@@ -6,8 +6,10 @@ namespace Game.Minesweeper
 {
     public class GameController : MonoBehaviour
     {
+        #region globals
+
         public BlockObject blockInfoPrefab;
-        public BlockObject[,] blockObjects;
+        private BlockObject[,] blockObjects;
         public Transform parent;
 
         public Text gameOverText;
@@ -15,16 +17,24 @@ namespace Game.Minesweeper
         public int gridSize = 3;
         public int mineCount = 3;
 
+        #endregion
+
+        #region lifecycle
+
         void Start()
         {
-            //gridSize = 4;  //PlayerPrefs.GetInt( "GridSize" );
-            //mineCount = 4; //PlayerPrefs.GetInt( "MineCount" );
+            gridSize = PlayerPrefs.GetInt( "GridSize" );
+            mineCount = PlayerPrefs.GetInt( "MineCount" );
 
             blockObjects = new BlockObject[gridSize, gridSize];
 
             SetupGrid();
             SetupAdjacentCounter();
         }
+
+        #endregion
+
+        #region setup
 
         private int[] SetupMineIndex()
         {
@@ -33,70 +43,17 @@ namespace Game.Minesweeper
 
             for ( var i = 0; i < mineCount; i++ )
             {
-                array[i] = UnityEngine.Random.Range( 0, size );
+                array[i] = Random.Range( 0, size );
             }
 
             return array;
-        }
-
-        private bool Contains( int[] array, int value )
-        {
-            for ( var i = 0; i < array.Length; i++ )
-            {
-                if ( array[i] == value )
-                    return true;
-            }
-
-            return false;
-        }
-
-        public void OnGameover()
-        {
-            gameOverText.gameObject.SetActive( true );
-
-            for ( var j = 0; j < gridSize; j++ )
-            {
-                for ( var i = 0; i < gridSize; i++ )
-                {
-                    if ( blockObjects[i, j].count == -1 )
-                    {
-                        blockObjects[i, j].overlay.gameObject.SetActive( false );
-                        blockObjects[i, j].mineImg.gameObject.SetActive( true );
-                    }
-                }
-            }
-
-            StartCoroutine( ShowGameoverScreen() );
-        }
-
-        public IEnumerator ShowGameoverScreen( float delay = 4f )
-        {
-            yield return new WaitForSeconds( delay );
-
-            UnityEngine.SceneManagement.SceneManager.LoadScene( "Gameover" );
-        }
-
-        private bool IsMine( int index )
-        {
-            var mineIndex = 0;
-            var selectedArray = SetupMineIndex();
-
-            if ( mineIndex < mineCount )
-            {
-                if ( Contains( selectedArray, index ) )
-                {
-                    mineIndex++;
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private void SetupGrid()
         {
             var buttonRect = blockInfoPrefab.GetComponent<Button>().GetComponent<RectTransform>();
             var index = 0;
+            var mineIndexes = SetupMineIndex();
 
             for ( var j = 0; j < gridSize; j++ )
             {
@@ -110,7 +67,7 @@ namespace Game.Minesweeper
 
                     //set position
                     block.GetComponent<RectTransform>().anchoredPosition = new Vector2( i * buttonRect.rect.width, -j * buttonRect.rect.height );
-                    block.Setup( IsMine( index++ ) ? -1 : block.count, new Point( i, j ) );
+                    block.Setup( IsMine( index++, mineIndexes ) ? -1 : block.count, new Point( i, j ) );
 
                     //save to array
                     blockObjects[i, j] = block;
@@ -180,6 +137,51 @@ namespace Game.Minesweeper
                 blockObjects[i + 1, j + 1].SetCounter();
             }
         }
+
+        #endregion
+
+        #region gameover handler
+
+        private void OnGameWin()
+        {
+            gameOverText.text = "MINEFIELD CLEARED!!!";
+            gameOverText.gameObject.SetActive( true );
+
+            PlayerPrefs.SetString( "Cleared", "Cleared" );
+            StartCoroutine( ShowMenuScreenWithMessage() );
+        }
+
+        public void OnGameover()
+        {
+            gameOverText.text = "HUEHUEHUE GAMEOVER";
+            gameOverText.gameObject.SetActive( true );
+
+            for ( var j = 0; j < gridSize; j++ )
+            {
+                for ( var i = 0; i < gridSize; i++ )
+                {
+                    if ( blockObjects[i, j].count == -1 )
+                    {
+                        blockObjects[i, j].overlay.gameObject.SetActive( false );
+                        blockObjects[i, j].mineImg.gameObject.SetActive( true );
+                    }
+                }
+            }
+
+            PlayerPrefs.SetString( "Cleared", "Blast" );
+            StartCoroutine( ShowMenuScreenWithMessage() );
+        }
+
+        public IEnumerator ShowMenuScreenWithMessage( float delay = 2f )
+        {
+            yield return new WaitForSeconds( delay );
+
+            UnityEngine.SceneManagement.SceneManager.LoadScene( "Menu" );
+        }
+
+        #endregion
+
+        #region utilities
 
         public BlockObject[] GetObjectsByIndex( BlockObject caller )
         {
@@ -286,5 +288,55 @@ namespace Game.Minesweeper
 
             return blocks;
         }
+
+        private bool Contains( int[] array, int value )
+        {
+            for ( var i = 0; i < array.Length; i++ )
+            {
+                if ( array[i] == value )
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool IsMine( int index, int[] selectedIndexes )
+        {
+            var mineIndex = 0;
+
+            if ( mineIndex < mineCount )
+            {
+                if ( Contains( selectedIndexes, index ) )
+                {
+                    mineIndex++;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public int visitedCount = 0;
+
+        public void OnBlockVisited()
+        {
+            visitedCount++;
+
+            if ( visitedCount + mineCount == (gridSize * gridSize) )
+            {
+                OnGameWin();
+            }
+        }
+
+        #endregion
+
+        #region OnQuit
+
+        private void OnApplicationQuit()
+        {
+            PlayerPrefs.SetString( "Cleared", string.Empty );
+        }
+
+        #endregion
     }
 }
