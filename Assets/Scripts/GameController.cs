@@ -17,6 +17,8 @@ namespace Game.Minesweeper
         public int gridSize = 3;
         public int mineCount = 3;
 
+        public int visitedCount = 0;
+
         #endregion
 
         #region lifecycle
@@ -55,7 +57,6 @@ namespace Game.Minesweeper
             var index = 0;
             var mineIndexes = SetupMineIndex();
             var offset = GetOffsetPosition( buttonRect );
-            print( "offset " + offset );
 
             for ( var j = 0; j < gridSize; j++ )
             {
@@ -318,8 +319,6 @@ namespace Game.Minesweeper
             return false;
         }
 
-        public int visitedCount = 0;
-
         public void OnBlockVisited()
         {
             visitedCount++;
@@ -332,10 +331,8 @@ namespace Game.Minesweeper
 
         private int GetOffsetPosition( RectTransform buttonRect )
         {
-            //var totalWidth = ( int )buttonRect.rect.width * gridSize;
-            //return (totalWidth * 2) / gridSize;     //[totalWidth / (gridSize / 2)]
-
-            return (( int )buttonRect.rect.width * (1 - gridSize) / 2);     //(buttonwidth * (1 - gridSize)) / 2
+            //(buttonwidth * (1 - gridSize)) / 2
+            return (( int )buttonRect.rect.width * (1 - gridSize) / 2);
         }
 
         #endregion
